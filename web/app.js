@@ -1,7 +1,7 @@
 // Lantern Drift: the browser view (milestone 3). Draws the game from src/play.js.
 import { generateLevel } from '../src/generate.js';
 import {
-  createGame, cycleCell, undo, reset, hint, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash,
+  createGame, cycleCell, undo, reset, hint, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash, resultCard,
 } from '../src/play.js';
 import { LEVEL_COUNT, levelSettings } from '../src/packs.js';
 import { FEATURED } from '../src/featured.js';
@@ -14,6 +14,8 @@ const levelEl = document.getElementById('level');
 const prevEl = document.getElementById('prev');
 const nextEl = document.getElementById('next');
 const hintEl = document.getElementById('hint');
+const resultEl = document.getElementById('result');
+const resultTextEl = document.getElementById('result-text');
 
 const EMITTER_NAMES = { '>': 'right', '<': 'left', '^': 'up', 'v': 'down' };
 const STOP_TEXT = { edge: 'left the board', wall: 'hit a wall', loop: 'looped back on itself' };
@@ -109,6 +111,7 @@ function render() {
   showStatus(status);
   document.body.classList.toggle('solved', status.solved);
   hintEl.disabled = status.solved;
+  showResult(status);
 }
 
 // One polyline through the centres of the cells the beam crosses, starting at the emitter.
@@ -130,6 +133,26 @@ function showStatus(status) {
       `lanterns lit: ${status.litCount} of ${status.total} · ${moveText} · the beam ${STOP_TEXT[status.stop]}`;
   }
 }
+
+// Milestone 11: a solved board offers a short result to copy (level, moves, link). No mirrors in it.
+function showResult(status) {
+  resultEl.hidden = !status.solved;
+  if (!status.solved) return;
+  const { tier } = settings.level ? levelSettings(settings.level) : {};
+  const label = settings.level
+    ? `level ${settings.level} of ${LEVEL_COUNT} · ${tier} · ${settings.width}x${settings.height}, ${settings.lanterns} lanterns`
+    : `custom level · ${settings.width}x${settings.height}, ${settings.lanterns} lanterns`;
+  resultTextEl.textContent = resultCard({ label, moves: moveCount(game), link: location.href });
+}
+
+document.getElementById('result-copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(resultTextEl.textContent);
+    notice('result copied. it has the level link, not your mirrors.');
+  } catch {
+    notice('could not copy here. select the result text and copy it by hand.');
+  }
+});
 
 function focusCell(x, y) {
   boardEl.querySelector(`[data-x="${x}"][data-y="${y}"]`)?.focus();

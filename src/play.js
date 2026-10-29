@@ -120,3 +120,10 @@ export function settingsToHash({ seed, width, height, lanterns, level }) {
   const board = `#seed=${seed}&w=${width}&h=${height}&l=${lanterns}`;
   return level ? `${board}&level=${level}` : board;
 }
+
+// The text a player can copy when a board is solved (milestone 11). It has the level, the move count and the link to the level.
+// It never has the player's mirrors, the same as the copy link button.
+export function resultCard({ label, moves, link }) {
+  const count = `${moves} move${moves === 1 ? '' : 's'}`;
+  return `lantern drift · ${label} · solved in ${count}\n${link}`;
+}

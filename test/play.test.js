@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, hint, parseSettings, settingsToHash,
+  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, hint, parseSettings, settingsToHash, resultCard,
 } from '../src/play.js';
 import { generateLevel } from '../src/generate.js';
 
@@ -139,4 +139,14 @@ test('hint: it is a move, so undo takes it back', () => {
   const after = hint(start);
   assert.equal(moveCount(after), 1);
   assert.deepEqual(undo(after).rows, start.rows);
+});
+
+test('resultCard: level, moves and the level link, never the mirrors', () => {
+  const card = resultCard({ label: 'level 7 of 18 · night · 5x5, 3 lanterns', moves: 4, link: 'https://example.test/#seed=165&w=5&h=5&l=3&level=8' });
+  assert.equal(card, 'lantern drift · level 7 of 18 · night · 5x5, 3 lanterns · solved in 4 moves\nhttps://example.test/#seed=165&w=5&h=5&l=3&level=8');
+});
+
+test('resultCard: one move reads as one move', () => {
+  const card = resultCard({ label: 'custom level', moves: 1, link: 'x' });
+  assert.match(card, /solved in 1 move\nx$/);
 });

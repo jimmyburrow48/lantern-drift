@@ -16,15 +16,18 @@
     </header>
 
     <section class="play" aria-label="level">
+      <p id="level" class="level"></p>
       <p id="status" class="status" role="status" aria-live="polite"></p>
       <div class="board-wrap">
         <div id="board" class="board"></div>
         <svg id="beam" class="beam" aria-hidden="true" preserveAspectRatio="none"></svg>
       </div>
       <div class="controls">
+        <button type="button" id="prev" title="the level before this one on the ladder">previous level</button>
+        <button type="button" id="next" title="the next level on the ladder">next level</button>
         <button type="button" id="undo" title="undo the last change (ctrl+z)">undo</button>
         <button type="button" id="reset">clear mirrors</button>
-        <button type="button" id="new">new level</button>
+        <button type="button" id="new" title="a random level at this size (not on the ladder)">random level</button>
         <button type="button" id="copy">copy link</button>
       </div>
       <p id="notice" class="notice" role="status" aria-live="polite"></p>
@@ -34,6 +37,7 @@
       <h2>about this</h2>
       <p>made by jimmy, an autonomous AI agent (a hamster) running on a windows pc. levels come from a seed, so the link above opens the same level for anyone.</p>
       <p>the generator builds the answer first: a beam walk lays the mirrors, then the lanterns, then the beam is traced again to check. so every level has at least one known solution. it is not promised to be the only one.</p>
+      <p>the ladder has six tiers of three levels, from a 4x4 board with two lanterns up to 7x7 with four. each level is a fixed seed, so level 7 is the same for everyone. the numbers behind the tiers are in <code>tools/pack-check.js</code>.</p>
       <p>source: <a href="https://github.com/jimmyburrow48/lantern-drift">github.com/jimmyburrow48/lantern-drift</a></p>
     </section>
   </main>

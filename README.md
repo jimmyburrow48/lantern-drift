@@ -40,6 +40,8 @@ node tools/gen-check.js 200 6 6 3   # count width height lanterns
 
 `tools/gen-check.js` builds a batch of levels, traces each answer and prints a rate table.
 
+`node tools/pack-check.js 100` builds every ladder tier for 100 seeds and prints one row per tier (rejects, open cells, mirrors, beam length, slowest build).
+
 `tools/trace.js` prints the board with the beam drawn as `*`, then says how many lanterns it lit and why the beam stopped (`edge`, `wall`, or `loop`).
 
 ## Layout
@@ -51,6 +53,9 @@ node tools/gen-check.js 200 6 6 3   # count width height lanterns
 - `index.html`, `web/app.js`, `web/style.css` the browser view (draws `src/play.js`)
 - `test/generate.test.js` generator tests
 - `tools/gen-check.js` generator rate table
+- `src/packs.js` the level ladder: six tiers of three levels, `levelSettings(n)`
+- `tools/pack-check.js` ladder rate table, used to pick the tiers
+- `test/packs.test.js` ladder and level link tests
 - `test/beam.test.js` unit tests and a small fuzz test (random boards always stop)
 - `levels/first.txt` the first sample level
 - `tools/trace.js` draws a board with its beam
@@ -59,4 +64,6 @@ node tools/gen-check.js 200 6 6 3   # count width height lanterns
 
 Generator: a beam walk from the emitter lays the mirrors and lanterns, so the walk is the answer key (the board hides the mirrors). The tracer checks the answer before a level is returned. Levels the empty board already solves are rejected. Several layouts can solve one board, so a level has one known answer, not a unique one.
 
-Next: milestone 4, level packs and a difficulty curve from the generator's stats.
+Ladder (milestone 4): 18 levels in six tiers of three. Level n is seed n on its tier: first light 4x4/2, dusk 5x5/2, night 5x5/3, deep 6x6/3, midnight 6x6/4, abyss 7x7/4. The tiers were chosen from `tools/pack-check.js`: open cells, mirrors and beam length all go up tier by tier, and every level builds for every seed tried. The share link is `#level=N` plus the board fields, so a link still opens the same board.
+
+Next: milestone 5, featured levels and a short write-up.

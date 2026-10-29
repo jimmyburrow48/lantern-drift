@@ -3,11 +3,15 @@ import { generateLevel } from '../src/generate.js';
 import {
   createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, parseSettings, settingsToHash,
 } from '../src/play.js';
+import { LEVEL_COUNT, levelSettings } from '../src/packs.js';
 
 const boardEl = document.getElementById('board');
 const beamEl = document.getElementById('beam');
 const statusEl = document.getElementById('status');
 const noticeEl = document.getElementById('notice');
+const levelEl = document.getElementById('level');
+const prevEl = document.getElementById('prev');
+const nextEl = document.getElementById('next');
 
 const EMITTER_NAMES = { '>': 'right', '<': 'left', '^': 'up', 'v': 'down' };
 const STOP_TEXT = { edge: 'left the board', wall: 'hit a wall', loop: 'looped back on itself' };
@@ -18,8 +22,11 @@ function notice(text) {
   noticeEl.textContent = text;
 }
 
+let settings = null;
+
+// Level 1 of the ladder is the first thing a new visitor sees.
 function load() {
-  const settings = parseSettings(location.hash);
+  settings = location.hash.length > 1 ? parseSettings(location.hash) : levelSettings(1);
   try {
     game = createGame(generateLevel(settings).text);
   } catch (err) {
@@ -29,7 +36,23 @@ function load() {
   // Write the cleaned-up link back, so a bad one still shows what is being played.
   history.replaceState(null, '', settingsToHash(settings));
   notice('');
+  showLevel();
   render();
+}
+
+function showLevel() {
+  if (settings.level) {
+    const { tier } = levelSettings(settings.level);
+    levelEl.textContent = `level ${settings.level} of ${LEVEL_COUNT} · ${tier} · ${settings.width}x${settings.height}, ${settings.lanterns} lanterns`;
+  } else {
+    levelEl.textContent = `custom level · ${settings.width}x${settings.height}, ${settings.lanterns} lanterns`;
+  }
+  prevEl.disabled = !settings.level || settings.level <= 1;
+  nextEl.disabled = !settings.level || settings.level >= LEVEL_COUNT;
+}
+
+function goToLevel(level) {
+  location.hash = settingsToHash(levelSettings(level));
 }
 
 function describe(ch, x, y, movable) {
@@ -124,10 +147,12 @@ document.getElementById('reset').addEventListener('click', () => {
   render();
 });
 
+prevEl.addEventListener('click', () => goToLevel(settings.level - 1));
+nextEl.addEventListener('click', () => goToLevel(settings.level + 1));
+
 document.getElementById('new').addEventListener('click', () => {
   const seed = 1 + Math.floor(Math.random() * 999999);
-  const settings = { ...parseSettings(location.hash), seed };
-  location.hash = settingsToHash(settings);
+  location.hash = settingsToHash({ seed, width: settings.width, height: settings.height, lanterns: settings.lanterns });
 });
 
 document.getElementById('copy').addEventListener('click', async () => {

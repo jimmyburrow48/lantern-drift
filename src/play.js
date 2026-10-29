@@ -1,6 +1,7 @@
 // Lantern Drift: play state (milestone 3). Pure functions, no DOM, so the tests run in node.
 // A game is the level text the generator made, plus the mirrors the player has placed.
 import { parseBoard, traceBeam } from './beam.js';
+import { LEVEL_COUNT, levelSettings } from './packs.js';
 
 // Empty cell -> '/' -> '\' -> empty. Only cells that were empty in the level can change.
 const CYCLE = { '.': '/', '/': '\\', '\\': '.' };
@@ -58,7 +59,7 @@ export function gameStatus(game) {
   };
 }
 
-// The share link lives in the url hash: #seed=12&w=6&h=6&l=3.
+// The share link lives in the url hash: #seed=12&w=6&h=6&l=3, or #level=7 for a ladder level.
 // Anything missing or out of range falls back to the default, so a bad link still opens a level.
 export function parseSettings(hash = '') {
   const params = new URLSearchParams(hash.replace(/^#/, ''));
@@ -68,14 +69,20 @@ export function parseSettings(hash = '') {
     const n = Number(text);
     return n >= min && n <= max ? n : fallback;
   };
-  return {
+  const level = pick('level', [1, LEVEL_COUNT, 0]);
+  const hasBoard = ['seed', 'w', 'h', 'l'].some((name) => params.has(name));
+  if (level && !hasBoard) return levelSettings(level);
+
+  const settings = {
     seed: pick('seed', LIMITS.seed),
     width: pick('w', LIMITS.size),
     height: pick('h', LIMITS.size),
     lanterns: pick('l', LIMITS.lanterns),
   };
+  return level ? { ...settings, level } : settings;
 }
 
-export function settingsToHash({ seed, width, height, lanterns }) {
-  return `#seed=${seed}&w=${width}&h=${height}&l=${lanterns}`;
+export function settingsToHash({ seed, width, height, lanterns, level }) {
+  const board = `#seed=${seed}&w=${width}&h=${height}&l=${lanterns}`;
+  return level ? `${board}&level=${level}` : board;
 }

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, parseSettings, settingsToHash,
+  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash,
 } from '../src/play.js';
 import { generateLevel } from '../src/generate.js';
 
@@ -93,4 +93,20 @@ test('parseSettings: missing or bad values fall back to the defaults', () => {
   assert.deepEqual(parseSettings(''), { seed: 1, width: 6, height: 6, lanterns: 3 });
   assert.deepEqual(parseSettings('#seed=abc&w=99&h=2&l=0'), { seed: 1, width: 6, height: 6, lanterns: 3 });
   assert.deepEqual(parseSettings('#seed=-5&w=8'), { seed: 1, width: 8, height: 6, lanterns: 3 });
+});
+
+test('nextMovable: arrow steps skip cells the player cannot change', () => {
+  // SAMPLE: the emitter is (0,3), a lantern (1,3), a fixed mirror (3,3), a lantern (3,4)
+  const game = createGame(SAMPLE);
+  assert.deepEqual(nextMovable(game, 0, 0, 1, 0), { x: 1, y: 0 });
+  assert.equal(nextMovable(game, 2, 3, -1, 0), null); // the lantern and the emitter block the way
+  assert.deepEqual(nextMovable(game, 2, 3, 1, 0), { x: 4, y: 3 }); // the fixed mirror at (3,3) is skipped
+  assert.equal(nextMovable(game, 0, 0, 0, -1), null); // off the top edge
+  assert.equal(nextMovable(game, 5, 5, 1, 0), null); // off the right edge
+});
+
+test('nextMovable: walks down a column past a fixed mirror and a lantern', () => {
+  const game = createGame(SAMPLE);
+  assert.deepEqual(nextMovable(game, 3, 0, 0, 1), { x: 3, y: 1 });
+  assert.deepEqual(nextMovable(game, 3, 2, 0, 1), { x: 3, y: 5 }); // (3,3) mirror and (3,4) lantern are skipped
 });

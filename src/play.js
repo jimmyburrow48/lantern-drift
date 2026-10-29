@@ -18,6 +18,21 @@ export function isMovable(game, x, y) {
   return game.fixed[y][x] === '.';
 }
 
+// Keyboard play (milestone 9): the next movable cell from (x, y) in one direction, or null at the edge.
+// Walks past walls, lanterns, the emitter and the fixed mirrors, so arrow keys skip cells you cannot change.
+export function nextMovable(game, x, y, dx, dy) {
+  const height = game.fixed.length;
+  const width = game.fixed[0].length;
+  let cx = x + dx;
+  let cy = y + dy;
+  while (cx >= 0 && cy >= 0 && cx < width && cy < height) {
+    if (isMovable(game, cx, cy)) return { x: cx, y: cy };
+    cx += dx;
+    cy += dy;
+  }
+  return null;
+}
+
 // Turn the mirror on one cell. Returns a new game; the old one is kept for undo.
 export function cycleCell(game, x, y) {
   if (!isMovable(game, x, y)) return game;

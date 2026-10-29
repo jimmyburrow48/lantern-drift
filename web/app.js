@@ -1,7 +1,7 @@
 // Lantern Drift: the browser view (milestone 3). Draws the game from src/play.js.
 import { generateLevel } from '../src/generate.js';
 import {
-  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, parseSettings, settingsToHash,
+  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash,
 } from '../src/play.js';
 import { LEVEL_COUNT, levelSettings } from '../src/packs.js';
 import { FEATURED } from '../src/featured.js';
@@ -140,6 +140,18 @@ boardEl.addEventListener('click', (event) => {
   game = cycleCell(game, x, y);
   render();
   focusCell(x, y);
+});
+
+// Arrow keys move between the cells you can change (enter or space turns a cell, as on any button).
+const ARROW_STEPS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
+boardEl.addEventListener('keydown', (event) => {
+  const step = ARROW_STEPS[event.key];
+  const cell = event.target.closest('.cell');
+  if (!step || !cell) return;
+  event.preventDefault();
+  const target = nextMovable(game, Number(cell.dataset.x), Number(cell.dataset.y), ...step);
+  if (target) focusCell(target.x, target.y);
 });
 
 document.getElementById('undo').addEventListener('click', () => {

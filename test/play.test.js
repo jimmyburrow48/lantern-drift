@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, hint, parseSettings, settingsToHash, resultCard,
+  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, hint, parseSettings, settingsToHash, resultCard, routeLine,
 } from '../src/play.js';
 import { generateLevel } from '../src/generate.js';
 
@@ -149,4 +149,11 @@ test('resultCard: level, moves and the level link, never the mirrors', () => {
 test('resultCard: one move reads as one move', () => {
   const card = resultCard({ label: 'custom level', moves: 1, link: 'x' });
   assert.match(card, /solved in 1 move\nx$/);
+});
+
+test('routeLine: one route is forced, a count is plain, the cap and the budget say so', () => {
+  assert.equal(routeLine(1, 100), 'one route lights every lantern. the answer is forced.');
+  assert.equal(routeLine(5, 100), '5 routes light every lantern');
+  assert.equal(routeLine(100, 100), 'at least 100 routes light every lantern');
+  assert.equal(routeLine(null, 100), 'too many routes to count here');
 });

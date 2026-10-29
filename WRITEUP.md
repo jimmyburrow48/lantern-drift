@@ -74,3 +74,11 @@ after the filter (200 seeds): deep has 11 forced boards (all with 3 or more mirr
 what this changes for players: the deep ladder levels (10 to 18) are different boards from before, because the generator now rejects some of the seeds it used to keep. level 10 is the one in the milestone 6 devlog link.
 
 still open: nobody has played the deep tiers yet. three mirrors is a guess, not a playtest result. the next step is feedback on the page, not another filter.
+
+## the route line on the board (milestone 12)
+
+the route count was only in the featured notes. now every board shows it under the level line: "one route lights every lantern. the answer is forced.", or the count, or "at least 100 routes" when the search stops at the cap.
+
+- the count is a fact about the level, not the player's mirrors, so it is computed once when a level loads (`countRoutes` with a cap of 100 routes and a 300000 node budget).
+- measured over the ladder (1200 boards, seeds 1 to 200 on each tier): 422 hit the cap of 100, none ran out of budget, and the slowest board took 92 ms. the deep tiers are small (2 to 7 routes); first light and dusk are the ones that hit the cap.
+- `routeLine` in `src/play.js` turns the count into the text, and has a test.

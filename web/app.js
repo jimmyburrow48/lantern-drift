@@ -1,16 +1,21 @@
 // Lantern Drift: the browser view (milestone 3). Draws the game from src/play.js.
 import { generateLevel } from '../src/generate.js';
 import {
-  createGame, cycleCell, undo, reset, hint, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash, resultCard,
+  createGame, cycleCell, undo, reset, hint, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash, resultCard, routeLine,
 } from '../src/play.js';
 import { LEVEL_COUNT, levelSettings } from '../src/packs.js';
 import { FEATURED } from '../src/featured.js';
+import { countRoutes } from '../src/solve.js';
+
+// The route line counts up to this many routes; more than that reads "at least".
+const ROUTE_CAP = 100;
 
 const boardEl = document.getElementById('board');
 const beamEl = document.getElementById('beam');
 const statusEl = document.getElementById('status');
 const noticeEl = document.getElementById('notice');
 const levelEl = document.getElementById('level');
+const routesEl = document.getElementById('routes');
 const prevEl = document.getElementById('prev');
 const nextEl = document.getElementById('next');
 const hintEl = document.getElementById('hint');
@@ -35,6 +40,8 @@ function load() {
     // A ladder level is built from its tier (walls and route cap), not from the bare link fields.
     const level = generateLevel(settings.level ? levelSettings(settings.level) : settings);
     game = createGame(level.text, level.answer);
+    // The route count is a fact about the level, so it is counted once per load, not per move.
+    routesEl.textContent = routeLine(countRoutes(level.text, { maxRoutes: ROUTE_CAP, maxNodes: 300000 }), ROUTE_CAP);
   } catch (err) {
     notice(`no level for these settings (${err.message}). try another seed or size.`);
     return;

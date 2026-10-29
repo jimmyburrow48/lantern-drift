@@ -121,6 +121,16 @@ export function settingsToHash({ seed, width, height, lanterns, level }) {
   return level ? `${board}&level=${level}` : board;
 }
 
+// The route line under the level (milestone 12). count is what countRoutes returned: null when its search ran out
+// of budget, and a count equal to cap means "at least cap". It is a fact about the level, not the player's mirrors.
+export function routeLine(count, cap) {
+  if (count === null) return 'too many routes to count here';
+  if (count >= cap) return `at least ${cap} routes light every lantern`;
+  if (count === 0) return 'no route lights every lantern';
+  if (count === 1) return 'one route lights every lantern. the answer is forced.';
+  return `${count} routes light every lantern`;
+}
+
 // The text a player can copy when a board is solved (milestone 11). It has the level, the move count and the link to the level.
 // It never has the player's mirrors, the same as the copy link button.
 export function resultCard({ label, moves, link }) {

@@ -1,7 +1,7 @@
 // Lantern Drift: the browser view (milestone 3). Draws the game from src/play.js.
 import { generateLevel } from '../src/generate.js';
 import {
-  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash,
+  createGame, cycleCell, undo, reset, hint, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash,
 } from '../src/play.js';
 import { LEVEL_COUNT, levelSettings } from '../src/packs.js';
 import { FEATURED } from '../src/featured.js';
@@ -13,6 +13,7 @@ const noticeEl = document.getElementById('notice');
 const levelEl = document.getElementById('level');
 const prevEl = document.getElementById('prev');
 const nextEl = document.getElementById('next');
+const hintEl = document.getElementById('hint');
 
 const EMITTER_NAMES = { '>': 'right', '<': 'left', '^': 'up', 'v': 'down' };
 const STOP_TEXT = { edge: 'left the board', wall: 'hit a wall', loop: 'looped back on itself' };
@@ -30,7 +31,8 @@ function load() {
   settings = location.hash.length > 1 ? parseSettings(location.hash) : levelSettings(1);
   try {
     // A ladder level is built from its tier (walls and route cap), not from the bare link fields.
-    game = createGame(generateLevel(settings.level ? levelSettings(settings.level) : settings).text);
+    const level = generateLevel(settings.level ? levelSettings(settings.level) : settings);
+    game = createGame(level.text, level.answer);
   } catch (err) {
     notice(`no level for these settings (${err.message}). try another seed or size.`);
     return;
@@ -106,6 +108,7 @@ function render() {
   drawBeam(status);
   showStatus(status);
   document.body.classList.toggle('solved', status.solved);
+  hintEl.disabled = status.solved;
 }
 
 // One polyline through the centres of the cells the beam crosses, starting at the emitter.
@@ -157,6 +160,18 @@ boardEl.addEventListener('keydown', (event) => {
 document.getElementById('undo').addEventListener('click', () => {
   game = undo(game);
   render();
+});
+
+// Hint (milestone 10): one cell goes to the answer key's choice. Says so when there is nothing to hint.
+hintEl.addEventListener('click', () => {
+  const next = hint(game);
+  if (next === game) {
+    notice('no hint here: the board is solved or already matches the key.');
+    return;
+  }
+  game = next;
+  render();
+  notice('hint: one cell now matches the answer key. it counts as a move.');
 });
 
 document.getElementById('reset').addEventListener('click', () => {

@@ -8,10 +8,11 @@ const CYCLE = { '.': '/', '/': '\\', '\\': '.' };
 
 export const LIMITS = { seed: [1, 4294967295, 1], size: [3, 10, 6], lanterns: [1, 6, 3] };
 
-export function createGame(levelText) {
+// The answer key (milestone 10) is optional: the page passes the generator's answer so the hint can use it.
+export function createGame(levelText, answerText = null) {
   parseBoard(levelText); // throws on a bad board
   const rows = levelText.split(/\r?\n/).filter((row) => row.length > 0);
-  return { fixed: rows, rows, history: [] };
+  return { fixed: rows, rows, history: [], answer: answerText };
 }
 
 export function isMovable(game, x, y) {
@@ -40,6 +41,24 @@ export function cycleCell(game, x, y) {
   const rows = game.rows.slice();
   rows[y] = row.slice(0, x) + CYCLE[row[x]] + row.slice(x + 1);
   return { ...game, rows, history: [...game.history, game.rows] };
+}
+
+// Hint (milestone 10): sets the first cell that differs from the answer key to the key's choice.
+// The key may clear a wrong mirror, so each hint moves the board closer to a solution.
+// A hint is a move in the history (undo takes it back). No hint on a solved board, or without a key.
+export function hint(game) {
+  if (!game.answer || gameStatus(game).solved) return game;
+  const answer = game.answer.split(/\r?\n/);
+  for (let y = 0; y < game.rows.length; y++) {
+    for (let x = 0; x < game.rows[y].length; x++) {
+      if (!isMovable(game, x, y) || game.rows[y][x] === answer[y][x]) continue;
+      const row = game.rows[y];
+      const rows = game.rows.slice();
+      rows[y] = row.slice(0, x) + answer[y][x] + row.slice(x + 1);
+      return { ...game, rows, history: [...game.history, game.rows] };
+    }
+  }
+  return game;
 }
 
 export function undo(game) {

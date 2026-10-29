@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, parseSettings, settingsToHash,
+  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, nextMovable, hint, parseSettings, settingsToHash,
 } from '../src/play.js';
 import { generateLevel } from '../src/generate.js';
 
@@ -109,4 +109,34 @@ test('nextMovable: walks down a column past a fixed mirror and a lantern', () =>
   const game = createGame(SAMPLE);
   assert.deepEqual(nextMovable(game, 3, 0, 0, 1), { x: 3, y: 1 });
   assert.deepEqual(nextMovable(game, 3, 2, 0, 1), { x: 3, y: 5 }); // (3,3) mirror and (3,4) lantern are skipped
+});
+
+test('hint: a hint walk solves the level in exactly as many hints as the key has mirrors', () => {
+  const level = generateLevel({ seed: 7, width: 5, height: 5, lanterns: 3 });
+  let game = createGame(level.text, level.answer);
+  let steps = 0;
+  while (!gameStatus(game).solved && steps < 100) {
+    const next = hint(game);
+    assert.notEqual(next, game, 'an unsolved board always gets a hint');
+    game = next;
+    steps++;
+  }
+  assert.equal(gameStatus(game).solved, true);
+  assert.equal(steps, level.mirrors);
+});
+
+test('hint: no key, or a solved board, gives the same game back', () => {
+  const level = generateLevel({ seed: 7, width: 5, height: 5, lanterns: 3 });
+  const bare = createGame(level.text);
+  assert.equal(hint(bare), bare);
+  const solved = createGame(SAMPLE, SAMPLE);
+  assert.equal(hint(solved), solved);
+});
+
+test('hint: it is a move, so undo takes it back', () => {
+  const level = generateLevel({ seed: 7, width: 5, height: 5, lanterns: 3 });
+  const start = createGame(level.text, level.answer);
+  const after = hint(start);
+  assert.equal(moveCount(after), 1);
+  assert.deepEqual(undo(after).rows, start.rows);
 });

@@ -1,0 +1,96 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, parseSettings, settingsToHash,
+} from '../src/play.js';
+import { generateLevel } from '../src/generate.js';
+
+const SAMPLE = '......\n......\n......\n>L.\\..\n...L..\n......';
+
+test('createGame: keeps the level and starts with no moves', () => {
+  const game = createGame(SAMPLE);
+  assert.equal(moveCount(game), 0);
+  assert.equal(game.rows.join('\n'), SAMPLE);
+});
+
+test('createGame: a bad board throws', () => {
+  assert.throws(() => createGame('>>\n..'));
+});
+
+test('isMovable: only empty cells of the level can take a mirror', () => {
+  const game = createGame(SAMPLE);
+  assert.equal(isMovable(game, 0, 0), true);
+  assert.equal(isMovable(game, 1, 3), false); // lantern
+  assert.equal(isMovable(game, 3, 3), false); // fixed mirror
+  assert.equal(isMovable(game, 0, 3), false); // emitter
+});
+
+test('cycleCell: empty -> / -> \\ -> empty, and fixed cells do not change', () => {
+  let game = createGame(SAMPLE);
+  game = cycleCell(game, 2, 0);
+  assert.equal(game.rows[0][2], '/');
+  game = cycleCell(game, 2, 0);
+  assert.equal(game.rows[0][2], '\\');
+  game = cycleCell(game, 2, 0);
+  assert.equal(game.rows[0][2], '.');
+
+  const before = createGame(SAMPLE);
+  const after = cycleCell(before, 3, 3);
+  assert.equal(after, before, 'a fixed mirror is not changed');
+});
+
+test('undo and reset go back', () => {
+  const start = createGame(SAMPLE);
+  let game = cycleCell(start, 0, 0);
+  game = cycleCell(game, 1, 0);
+  assert.equal(moveCount(game), 2);
+  game = undo(game);
+  assert.equal(game.rows[0][1], '.');
+  assert.equal(game.rows[0][0], '/');
+  game = undo(undo(game));
+  assert.deepEqual(game.rows, start.rows);
+  assert.equal(undo(game), game, 'undo with no history does nothing');
+  game = cycleCell(cycleCell(start, 0, 0), 4, 4);
+  assert.deepEqual(reset(game).rows, start.rows);
+  assert.equal(moveCount(reset(game)), 0);
+});
+
+test('gameStatus: the sample level is solved by its fixed mirror, the empty board is not', () => {
+  const solved = gameStatus(createGame(SAMPLE));
+  assert.equal(solved.solved, true);
+  assert.equal(solved.litCount, 2);
+  assert.equal(solved.total, 2);
+
+  const empty = createGame(SAMPLE.replace('\\', '.'));
+  const status = gameStatus(empty);
+  assert.equal(status.solved, false);
+  assert.equal(status.litCount, 1);
+});
+
+test('gameStatus: the beam path starts at the emitter side and tells why it stopped', () => {
+  const status = gameStatus(createGame(SAMPLE));
+  assert.equal(status.stop, 'edge');
+  assert.deepEqual(status.emitter, { x: 0, y: 3, dir: [1, 0] });
+  assert.deepEqual(status.path[0], { x: 1, y: 3 });
+  assert.ok(status.lit.has('1,3'));
+});
+
+test('a generated level is unsolved before the player moves it', () => {
+  for (const seed of [1, 7, 42]) {
+    const level = generateLevel({ seed, width: 6, height: 6, lanterns: 3 });
+    assert.equal(gameStatus(createGame(level.text)).solved, false, `seed ${seed}`);
+  }
+});
+
+test('parseSettings: a full link round-trips', () => {
+  const settings = { seed: 12345, width: 7, height: 5, lanterns: 4 };
+  const hash = settingsToHash(settings);
+  assert.equal(hash, '#seed=12345&w=7&h=5&l=4');
+  assert.deepEqual(parseSettings(hash), settings);
+});
+
+test('parseSettings: missing or bad values fall back to the defaults', () => {
+  assert.deepEqual(parseSettings(''), { seed: 1, width: 6, height: 6, lanterns: 3 });
+  assert.deepEqual(parseSettings('#seed=abc&w=99&h=2&l=0'), { seed: 1, width: 6, height: 6, lanterns: 3 });
+  assert.deepEqual(parseSettings('#seed=-5&w=8'), { seed: 1, width: 8, height: 6, lanterns: 3 });
+});

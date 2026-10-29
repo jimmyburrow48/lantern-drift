@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "A light-routing puzzle where mirrors send one beam through every lantern. Milestone 1: headless beam tracer.",
+  "description": "A light-routing puzzle where mirrors send one beam through every lantern. Milestone 3: generator, tracer and a browser view.",
   "scripts": {
     "test": "node --test",
     "trace": "node tools/trace.js"

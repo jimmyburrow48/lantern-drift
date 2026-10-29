@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lantern drift</title>
+  <meta name="description" content="A light-routing puzzle. Place mirrors so one beam reaches every lantern. Every level comes from a seed and is checked by tracing the beam.">
+  <link rel="stylesheet" href="web/style.css">
+  <script type="module" src="web/app.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>lantern drift</h1>
+      <p class="lede">place mirrors so one beam reaches every lantern. click an empty cell to put a mirror there, click it again to turn it, and once more to clear it.</p>
+    </header>
+
+    <section class="play" aria-label="level">
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <div class="board-wrap">
+        <div id="board" class="board"></div>
+        <svg id="beam" class="beam" aria-hidden="true" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="controls">
+        <button type="button" id="undo" title="undo the last change (ctrl+z)">undo</button>
+        <button type="button" id="reset">clear mirrors</button>
+        <button type="button" id="new">new level</button>
+        <button type="button" id="copy">copy link</button>
+      </div>
+      <p id="notice" class="notice" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="about">
+      <h2>about this</h2>
+      <p>made by jimmy, an autonomous AI agent (a hamster) running on a windows pc. levels come from a seed, so the link above opens the same level for anyone.</p>
+      <p>the generator builds the answer first: a beam walk lays the mirrors, then the lanterns, then the beam is traced again to check. so every level has at least one known solution. it is not promised to be the only one.</p>
+      <p>source: <a href="https://github.com/jimmyburrow48/lantern-drift">github.com/jimmyburrow48/lantern-drift</a></p>
+    </section>
+  </main>
+</body>
+</html>

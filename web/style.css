@@ -1,0 +1,193 @@
+:root {
+  --night: #0d1220;
+  --panel: #161d2e;
+  --stone: #223049;
+  --line: #2c3a58;
+  --ink: #e8e4d6;
+  --muted: #9aa5bf;
+  --lamp: #ffc857;
+  --lamp-soft: rgba(255, 200, 87, 0.35);
+  --beam: #ffd98a;
+  --mirror: #8fd4ff;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; background: var(--night); color: var(--ink); }
+
+body {
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+h1 { font-size: 2.2rem; margin: 0 0 0.25rem; letter-spacing: 0.02em; color: var(--lamp); }
+h2 { font-size: 1.1rem; margin: 2.5rem 0 0.5rem; color: var(--muted); font-weight: 600; }
+.lede { color: var(--muted); margin: 0 0 1.5rem; }
+a { color: var(--mirror); }
+
+.play {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.status {
+  min-height: 1.5em;
+  margin: 0 0 0.9rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.board-wrap {
+  position: relative;
+  width: min(100%, 520px);
+  margin: 0 auto;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(var(--w), 1fr);
+  grid-template-rows: repeat(var(--h), 1fr);
+  aspect-ratio: var(--w) / var(--h);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--night);
+}
+
+.beam {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.beam-line {
+  fill: none;
+  stroke: var(--beam);
+  stroke-width: 0.12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 0.35 0.2;
+  filter: drop-shadow(0 0 0.08px var(--lamp));
+  animation: flow 0.9s linear infinite;
+}
+
+@keyframes flow {
+  to { stroke-dashoffset: -0.55; }
+}
+
+.cell {
+  position: relative;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: var(--stone);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.cell:disabled { cursor: default; }
+.cell:not(:disabled):hover { background: #2b3b5c; }
+.cell:focus-visible { outline: 2px solid var(--lamp); outline-offset: -2px; }
+
+.cell.wall {
+  background: repeating-linear-gradient(45deg, #1b2438 0 6px, #141b2b 6px 12px);
+}
+
+/* mirrors: a bar through the middle of the cell, turned by 45 degrees */
+.mirror::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 50%;
+  height: 0.16em;
+  margin-top: -0.08em;
+  background: var(--mirror);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(143, 212, 255, 0.5);
+}
+.mirror.slash::after { transform: rotate(-45deg); }
+.mirror.back::after { transform: rotate(45deg); }
+
+/* lanterns: a glowing dot, brighter once the beam reaches it */
+.lantern::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 36%;
+  height: 36%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3c4 0%, var(--lamp) 45%, #a86b18 100%);
+  opacity: 0.55;
+  box-shadow: 0 0 6px rgba(255, 200, 87, 0.25);
+}
+.lantern.lit::after {
+  opacity: 1;
+  box-shadow: 0 0 18px var(--lamp-soft), 0 0 4px var(--lamp);
+}
+
+/* the emitter: a small lamp with a pointer showing the beam direction */
+.emitter::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: translate(-50%, -50%);
+  border-top: 0.22em solid transparent;
+  border-bottom: 0.22em solid transparent;
+  border-left: 0.36em solid var(--beam);
+  filter: drop-shadow(0 0 4px var(--lamp));
+}
+.emitter-right::after { transform: translate(-50%, -50%) rotate(0deg); }
+.emitter-down::after { transform: translate(-50%, -50%) rotate(90deg); }
+.emitter-left::after { transform: translate(-50%, -50%) rotate(180deg); }
+.emitter-up::after { transform: translate(-50%, -50%) rotate(-90deg); }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+button.control, .controls button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--stone);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+}
+.controls button:hover { background: #2b3b5c; }
+.controls button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+
+.notice {
+  min-height: 1.4em;
+  margin: 0.9rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+body.solved .play { border-color: var(--lamp); box-shadow: 0 0 28px rgba(255, 200, 87, 0.18); }
+
+.about p { color: var(--muted); }

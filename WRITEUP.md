@@ -49,6 +49,14 @@ see `src/featured.js`. two boards that were checked by hand (the route was read 
 
 no featured board was found for dusk, deep, midnight or abyss with two or more mirrors on every route and fewer than 12 routes in 200 seeds. that is the honest gap, and the next step for the generator.
 
-## what would make it tighter
+## what would make it tighter (milestone 6, done)
 
-the route count is the lever. a possible next milestone is a filter in the generator: keep a board only if its route count is at most a small number, and every route uses at least two mirrors. the cost is the rejection rate, which the route table can measure before any change to the ladder.
+the route count is the lever. measured first with `tools/route-dist.js` (150 seeds per tier): a plain cap on routes does not work above 4x4, because the open boards almost never have few routes (dusk 0.7% at 16 routes or fewer). the lever that works is walls: a higher wall density (0.4 instead of 0.08) cuts the cells the beam can reach, and a rejection cap (`maxRoutes`) then keeps only boards with at most 8 routes.
+
+- `generateLevel` takes `maxRoutes` (default: no cap) and `routeBudget`. a board over the cap, or over the node budget, is rejected and the walk is tried again.
+- the ladder's deep, midnight and abyss tiers use `pWall 0.4` and `maxRoutes 8` (`src/packs.js`). first light, dusk and night stay open, so their seeds and the two featured boards (157, 165) do not change.
+- after the change, 150 seeds per deep tier: 31 to 39% of boards have one route (forced), and 100% have at most 8. the rejection rate goes from ~64% to ~85%, and the slowest board builds in 61 ms.
+
+the new tier table (`node tools/pack-check.js 100`): deep 6x6/3 rejected 84%, open cells 19.5, mirrors 2.7; midnight 6x6/4 rejected 86%, open cells 18.5; abyss 7x7/4 rejected 85%, open cells 26.5. deep and midnight now have about the same open area (19.5 and 18.5), so the step between them comes from the lanterns, not the open cells.
+
+still open: a forced route can be short (one or two mirrors). a filter on the number of mirrors per route is a possible later step, but it needs a playtest first to know whether short forced levels are too easy.

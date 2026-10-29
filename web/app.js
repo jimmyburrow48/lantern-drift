@@ -28,7 +28,8 @@ let settings = null;
 function load() {
   settings = location.hash.length > 1 ? parseSettings(location.hash) : levelSettings(1);
   try {
-    game = createGame(generateLevel(settings).text);
+    // A ladder level is built from its tier (walls and route cap), not from the bare link fields.
+    game = createGame(generateLevel(settings.level ? levelSettings(settings.level) : settings).text);
   } catch (err) {
     notice(`no level for these settings (${err.message}). try another seed or size.`);
     return;

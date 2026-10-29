@@ -18,7 +18,7 @@ for (const tier of TIERS) {
   let best = { routes: Infinity, seed: 0 };
   let slowest = 0;
   for (let seed = 1; seed <= seeds; seed++) {
-    const level = generateLevel({ seed, width: tier.width, height: tier.height, lanterns: tier.lanterns });
+    const level = generateLevel({ seed, ...tier });
     const t0 = Date.now();
     const routes = countRoutes(level.text, { maxRoutes: CAP, maxNodes: BUDGET });
     slowest = Math.max(slowest, Date.now() - t0);

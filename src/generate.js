@@ -3,6 +3,7 @@
 // so the walk itself is the answer key. The board shows the mirror cells as empty.
 // The tracer checks the answer before a level is returned.
 import { parseBoard, traceBeam, isSolved, reflect } from './beam.js';
+import { countRoutes } from './solve.js';
 
 const EMITTER_CHAR = { '1,0': '>', '-1,0': '<', '0,-1': '^', '0,1': 'v' };
 const TURN_MIRRORS = ['/', '\\'];
@@ -86,6 +87,8 @@ function walkBeam({ width, height, rng, pMirror }) {
 }
 
 // Build one level. Same seed and settings always give the same level.
+// maxRoutes (milestone 6) rejects boards with more beam routes than that (countRoutes, with
+// a node budget; a board over the budget is rejected too). Infinity keeps every board.
 // Returns the board the player sees (mirror cells empty), the answer board
 // (mirrors filled in) and a few stats. Throws if no level is found in maxAttempts.
 export function generateLevel({
@@ -96,6 +99,8 @@ export function generateLevel({
   minMirrors = 2,
   pMirror = 0.35,
   pWall = 0.08,
+  maxRoutes = Infinity,
+  routeBudget = 200000,
   maxAttempts = 500,
 } = {}) {
   if (width < 3 || height < 3) throw new Error('board must be at least 3x3');
@@ -143,6 +148,13 @@ export function generateLevel({
     const lit = traceBeam(parseBoard(answerText)).lit.length;
     if (!isSolved(parseBoard(answerText)) || lit !== lanterns) {
       throw new Error(`generator bug at seed ${seed}: the answer lights ${lit} of ${lanterns} lanterns`);
+    }
+    if (maxRoutes < Infinity) {
+      const routes = countRoutes(playerText, { maxRoutes: maxRoutes + 1, maxNodes: routeBudget });
+      if (routes === null || routes > maxRoutes) {
+        rejected++;
+        continue;
+      }
     }
 
     return {

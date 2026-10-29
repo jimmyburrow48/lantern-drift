@@ -21,7 +21,7 @@ for (const tier of TIERS) {
     const t0 = Date.now();
     let level;
     try {
-      level = generateLevel({ seed, width: tier.width, height: tier.height, lanterns: tier.lanterns });
+      level = generateLevel({ seed, ...tier });
     } catch {
       failed++;
       continue;

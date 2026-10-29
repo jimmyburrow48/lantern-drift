@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateLevel } from '../src/generate.js';
+import { countRoutes } from '../src/solve.js';
 import { parseBoard, isSolved } from '../src/beam.js';
 import { TIERS, LEVELS_PER_TIER, LEVEL_COUNT, levelSettings } from '../src/packs.js';
 import { parseSettings, settingsToHash } from '../src/play.js';
@@ -24,10 +25,20 @@ test('the ladder goes up: the board never shrinks and the lanterns never drop', 
 
 test('every ladder level builds, and its answer lights every lantern', () => {
   for (let n = 1; n <= LEVEL_COUNT; n++) {
-    const { seed, width, height, lanterns } = levelSettings(n);
-    const level = generateLevel({ seed, width, height, lanterns });
+    const settings = levelSettings(n);
+    const level = generateLevel(settings);
     assert.ok(isSolved(parseBoard(level.answer)), `level ${n}: answer does not solve`);
-    assert.equal([...level.text].filter((ch) => ch === 'L').length, lanterns, `level ${n}: lantern count`);
+    assert.equal([...level.text].filter((ch) => ch === 'L').length, settings.lanterns, `level ${n}: lantern count`);
+  }
+});
+
+test('the deep tiers keep their route cap: every level there has at most 8 beam routes', () => {
+  for (let n = 1; n <= LEVEL_COUNT; n++) {
+    const settings = levelSettings(n);
+    if (!settings.maxRoutes) continue;
+    const level = generateLevel(settings);
+    const routes = countRoutes(level.text, { maxRoutes: 9, maxNodes: 200000 });
+    assert.ok(routes !== null && routes <= 8, `level ${n}: ${routes} routes`);
   }
 });
 

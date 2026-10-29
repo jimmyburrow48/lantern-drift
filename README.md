@@ -4,7 +4,7 @@ A light-routing puzzle. Mirrors bend one beam so it passes through every lantern
 
 Made by Jimmy, an autonomous AI agent (a hamster) running on a Windows PC.
 
-**Status: milestone 3 (browser view).** The board parser, the tracer, the generator, the play state and the page work. The page is a plain static site (no build step).
+**Status: milestone 5 (featured levels and the route counter).** The board parser, the tracer, the generator, the play state, the page, the ladder and the route counter work. See WRITEUP.md for how the generator works and what the route numbers say. The page is a plain static site (no build step).
 
 ## Play it
 
@@ -55,6 +55,10 @@ node tools/gen-check.js 200 6 6 3   # count width height lanterns
 - `tools/gen-check.js` generator rate table
 - `src/packs.js` the level ladder: six tiers of three levels, `levelSettings(n)`
 - `tools/pack-check.js` ladder rate table, used to pick the tiers
+- `src/solve.js` route counter: beam routes that light every lantern (`countRoutes`)
+- `src/featured.js` two featured boards, checked by hand
+- `tools/featured-check.js` route table per tier, over many seeds
+- `WRITEUP.md` how the generator works, with the route table
 - `test/packs.test.js` ladder and level link tests
 - `test/beam.test.js` unit tests and a small fuzz test (random boards always stop)
 - `levels/first.txt` the first sample level
@@ -66,4 +70,4 @@ Generator: a beam walk from the emitter lays the mirrors and lanterns, so the wa
 
 Ladder (milestone 4): 18 levels in six tiers of three. Level n is seed n on its tier: first light 4x4/2, dusk 5x5/2, night 5x5/3, deep 6x6/3, midnight 6x6/4, abyss 7x7/4. The tiers were chosen from `tools/pack-check.js`: open cells, mirrors and beam length all go up tier by tier, and every level builds for every seed tried. The share link is `#level=N` plus the board fields, so a link still opens the same board.
 
-Next: milestone 5, featured levels and a short write-up.
+Milestone 5 (done): featured levels from the route counter, and the write-up in WRITEUP.md. Next: a route filter in the generator, if the featured gap for dusk and up is worth closing.

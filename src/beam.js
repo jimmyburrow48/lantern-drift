@@ -15,6 +15,11 @@ const MIRRORS = {
   '\\': ([dx, dy]) => [dy, dx],
 };
 
+// Turn a beam heading with a mirror ('/' or '\\'). The level generator uses this.
+export function reflect(ch, dir) {
+  return MIRRORS[ch](dir);
+}
+
 export function parseBoard(text) {
   const rows = text.split(/\r?\n/).filter((line) => line.length > 0);
   if (rows.length === 0) throw new Error('empty board');

@@ -89,6 +89,8 @@ function walkBeam({ width, height, rng, pMirror }) {
 // Build one level. Same seed and settings always give the same level.
 // maxRoutes (milestone 6) rejects boards with more beam routes than that (countRoutes, with
 // a node budget; a board over the budget is rejected too). Infinity keeps every board.
+// minForcedMirrors (milestone 8) rejects a board whose only route (a forced solution) uses
+// fewer mirrors than that. 0 keeps every board. Boards with two or more routes are not checked.
 // Returns the board the player sees (mirror cells empty), the answer board
 // (mirrors filled in) and a few stats. Throws if no level is found in maxAttempts.
 export function generateLevel({
@@ -100,6 +102,7 @@ export function generateLevel({
   pMirror = 0.35,
   pWall = 0.08,
   maxRoutes = Infinity,
+  minForcedMirrors = 0,
   routeBudget = 200000,
   maxAttempts = 500,
 } = {}) {
@@ -149,9 +152,20 @@ export function generateLevel({
     if (!isSolved(parseBoard(answerText)) || lit !== lanterns) {
       throw new Error(`generator bug at seed ${seed}: the answer lights ${lit} of ${lanterns} lanterns`);
     }
-    if (maxRoutes < Infinity) {
-      const routes = countRoutes(playerText, { maxRoutes: maxRoutes + 1, maxNodes: routeBudget });
+    if (maxRoutes < Infinity || minForcedMirrors > 0) {
+      let firstRouteMirrors = null;
+      const routes = countRoutes(playerText, {
+        maxRoutes: maxRoutes + 1,
+        maxNodes: routeBudget,
+        onRoute: (decided) => {
+          firstRouteMirrors ??= [...decided.values()].filter((c) => c !== '.').length;
+        },
+      });
       if (routes === null || routes > maxRoutes) {
+        rejected++;
+        continue;
+      }
+      if (routes === 1 && firstRouteMirrors < minForcedMirrors) {
         rejected++;
         continue;
       }

@@ -42,6 +42,23 @@ test('the deep tiers keep their route cap: every level there has at most 8 beam 
   }
 });
 
+test('the deep tiers need three mirrors on a forced route: no single-route level there uses fewer', () => {
+  for (let n = 1; n <= LEVEL_COUNT; n++) {
+    const settings = levelSettings(n);
+    if (!settings.minForcedMirrors) continue;
+    const level = generateLevel(settings);
+    let mirrors = null;
+    const routes = countRoutes(level.text, {
+      maxRoutes: 2,
+      maxNodes: 200000,
+      onRoute: (decided) => {
+        mirrors = [...decided.values()].filter((c) => c !== '.').length;
+      },
+    });
+    if (routes === 1) assert.ok(mirrors >= settings.minForcedMirrors, `level ${n}: forced route has ${mirrors} mirrors`);
+  }
+});
+
 test('level links: #level=N opens the ladder level, and a board link keeps working', () => {
   assert.deepEqual(parseSettings('#level=7'), levelSettings(7));
   const board = { seed: 42, width: 5, height: 5, lanterns: 2, level: 7 };

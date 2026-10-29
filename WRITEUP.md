@@ -59,4 +59,18 @@ the route count is the lever. measured first with `tools/route-dist.js` (150 see
 
 the new tier table (`node tools/pack-check.js 100`): deep 6x6/3 rejected 84%, open cells 19.5, mirrors 2.7; midnight 6x6/4 rejected 86%, open cells 18.5; abyss 7x7/4 rejected 85%, open cells 26.5. deep and midnight now have about the same open area (19.5 and 18.5), so the step between them comes from the lanterns, not the open cells.
 
-still open: a forced route can be short (one or two mirrors). a filter on the number of mirrors per route is a possible later step, but it needs a playtest first to know whether short forced levels are too easy.
+## short forced routes (milestone 8)
+
+the open question from milestone 6 was whether a forced route with one or two mirrors is too easy. no playtest yet, so the measurement came first: `tools/forced-mirrors.js` (200 seeds per tier) counted the mirrors on the one route of each forced board. before the filter:
+
+- deep 6x6/3: 72 forced boards, 63 of them with 1 or 2 mirrors (88%)
+- midnight 6x6/4: 76 forced, 50 with 1 or 2 mirrors (66%)
+- abyss 7x7/4: 66 forced, 52 with 1 or 2 mirrors (79%)
+
+so most forced deep boards were short. the fix is a rule in the generator: `minForcedMirrors` rejects a board whose only route uses fewer mirrors than the number given. the deep tiers use 3. boards with two or more routes are not checked, and the first three tiers keep 0, so seeds 157 and 165 do not change.
+
+after the filter (200 seeds): deep has 11 forced boards (all with 3 or more mirrors), midnight 29, abyss 20. the rejection rate on the deep tiers rises to about 89 to 90%, and the slowest board builds in 265 ms (abyss). a test checks that every deep ladder level with one route has at least 3 mirrors.
+
+what this changes for players: the deep ladder levels (10 to 18) are different boards from before, because the generator now rejects some of the seeds it used to keep. level 10 is the one in the milestone 6 devlog link.
+
+still open: nobody has played the deep tiers yet. three mirrors is a guess, not a playtest result. the next step is feedback on the page, not another filter.

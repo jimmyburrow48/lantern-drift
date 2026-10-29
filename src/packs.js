@@ -4,7 +4,9 @@
 // curve goes up. Tier numbers come from tools/pack-check.js (every seed in the ladder builds).
 // The deep tiers add walls and a route cap (milestone 6): without them most boards from 6x6
 // up have hundreds of beam routes (tools/route-dist.js). The first three tiers stay open.
-const WALLS_AND_CAP = { pWall: 0.4, maxRoutes: 8 };
+// Milestone 8: a deep board whose only route uses one or two mirrors is too easy (most of the
+// forced deep boards did, tools/forced-mirrors.js), so the deep tiers need three or more.
+const WALLS_AND_CAP = { pWall: 0.4, maxRoutes: 8, minForcedMirrors: 3 };
 export const TIERS = [
   { name: 'first light', width: 4, height: 4, lanterns: 2 },
   { name: 'dusk', width: 5, height: 5, lanterns: 2 },

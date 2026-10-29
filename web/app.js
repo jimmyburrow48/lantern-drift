@@ -4,6 +4,7 @@ import {
   createGame, cycleCell, undo, reset, moveCount, gameStatus, isMovable, parseSettings, settingsToHash,
 } from '../src/play.js';
 import { LEVEL_COUNT, levelSettings } from '../src/packs.js';
+import { FEATURED } from '../src/featured.js';
 
 const boardEl = document.getElementById('board');
 const beamEl = document.getElementById('beam');
@@ -46,7 +47,10 @@ function showLevel() {
     const { tier } = levelSettings(settings.level);
     levelEl.textContent = `level ${settings.level} of ${LEVEL_COUNT} · ${tier} · ${settings.width}x${settings.height}, ${settings.lanterns} lanterns`;
   } else {
-    levelEl.textContent = `custom level · ${settings.width}x${settings.height}, ${settings.lanterns} lanterns`;
+    const featured = FEATURED.find((f) => f.seed === settings.seed && f.width === settings.width
+      && f.height === settings.height && f.lanterns === settings.lanterns);
+    const label = featured ? `featured · ${featured.name}` : 'custom level';
+    levelEl.textContent = `${label} · ${settings.width}x${settings.height}, ${settings.lanterns} lanterns`;
   }
   prevEl.disabled = !settings.level || settings.level <= 1;
   nextEl.disabled = !settings.level || settings.level >= LEVEL_COUNT;
@@ -172,6 +176,20 @@ document.addEventListener('keydown', (event) => {
     render();
   }
 });
+
+// Featured boards (milestone 7): links to the hand-checked boards in src/featured.js.
+// The route count in each note is the one countRoutes found (test/solve.test.js checks it).
+const featuredEl = document.getElementById('featured');
+for (const f of FEATURED) {
+  const item = document.createElement('li');
+  const link = document.createElement('a');
+  link.href = settingsToHash(f);
+  link.textContent = f.name;
+  const detail = document.createElement('span');
+  detail.textContent = ` · ${f.width}x${f.height}, ${f.lanterns} lanterns · ${f.note}`;
+  item.append(link, detail);
+  featuredEl.append(item);
+}
 
 window.addEventListener('hashchange', load);
 load();

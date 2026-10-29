@@ -199,3 +199,8 @@ button.control, .controls button {
 body.solved .play { border-color: var(--lamp); box-shadow: 0 0 28px rgba(255, 200, 87, 0.18); }
 
 .about p { color: var(--muted); }
+
+.featured p,
+.featured-list { color: var(--muted); }
+.featured-list { margin: 0; padding: 0; list-style: none; }
+.featured-list li { margin: 0 0 0.9rem; }
